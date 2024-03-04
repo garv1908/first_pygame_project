@@ -8,7 +8,9 @@ pygame.init()
 
 screen = pygame.display.set_mode((500, 500))
 clock = pygame.time.Clock()
+
 def random_position():
+    """generates and returns a random x and y within the screen"""
     x = random.randint(0, screen.get_width())
     y = random.randint(0, screen.get_height())
     return x, y
@@ -18,14 +20,10 @@ def detect_collision(circle_center, circle_radius, ball_rect):
     distance = sqrt((circle_center[0] - ball_center[0])**2 + (circle_center[1] - ball_center[1])**2)
     combined_radius = (circle_radius + ball_rect.width/2)
     return distance <= (combined_radius - ball_rect.width)
-    # circle_rect = pygame.Rect(circle_center[0] - circle_radius, circle_center[1] - circle_radius, circle_radius * 2, circle_radius * 2)
-    # return circle_rect.colliderect(ball_rect)
 
 def load_png(name):
-    """
-    Load image and return image object
-    """
-    fullname = os.path.join('images', name) # Assuming images are stored in a directory named 'images'
+    """loads image and return image object"""
+    fullname = os.path.join('images', name)
     try:
         image = pygame.image.load(fullname)
         if image.get_alpha() is None:
@@ -38,28 +36,29 @@ def load_png(name):
     return image, image.get_rect()
 
 def stayOnScreen(posX, posY, radius):
-        if posX - radius > screen.get_width():
-            posX = (posX - radius*2) - screen.get_width()
-        if posX + radius < 0:
-            posX = (posX + radius*2) + screen.get_width()
-        if posY - radius > screen.get_height():
-            posY = (posY - radius*2) - screen.get_height()
-        if posY + radius < 0:
-            posY = (posY + radius*2) + screen.get_height()
-        # if radius == 20:
-        #     ball.rect.center = (posX, posY)
-        
-        return (posX, posY)
+    """function allowing relocation of objects when they move
+        outside the screen.
+
+        their x, y, and radius as input parameters
+
+        returns a new x and y position if parameters go
+        outside criteria"""
+    if posX - radius > screen.get_width():
+        posX = (posX - radius*2) - screen.get_width()
+    if posX + radius < 0:
+        posX = (posX + radius*2) + screen.get_width()
+    if posY - radius > screen.get_height():
+        posY = (posY - radius*2) - screen.get_height()
+    if posY + radius < 0:
+        posY = (posY + radius*2) + screen.get_height()
+    return (posX, posY)
 
 class Ball(pygame.sprite.Sprite):
     """A ball that will move across the screen
     Returns: ball object
-    Functions: update, calcnewpos
-    Attributes: area, vector"""
+    Functions: calcnewpos
+    Attributes: area,"""
 
-
-    # def __init__(self, vector):
-        # self.vector = vector
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image, self.rect = load_png('ball.png')
@@ -70,13 +69,6 @@ class Ball(pygame.sprite.Sprite):
         self.rect.centerx = xandy[0]
         self.rect.centery = xandy[1]
 
-    # def update(self):
-    #     pass
-        # newpos = self.calcnewpos(self.rect, self.vector)
-        # print("New Position:", newpos)
-        # self.rect = newpos
-        # ball.rect.center = stayOnScreen(self.rect.centerx, self.rect.centery, 20)
-    
     def calcnewpos(self, rect, vector):
         (angle, z) = vector
         (dx, dy) = (z * math.cos(angle), z * math.sin(angle))
@@ -90,12 +82,14 @@ def print_points(points):
 def main():
     global player_pos
     global running
-    points = 0
+    running = True
     dt = 0
     radius = 40
-    player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
-    running = True
 
+    points = 0
+
+    player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
+    
     ball = Ball()
     while running:
         for event in pygame.event.get():
@@ -131,9 +125,8 @@ def main():
                 radius += 5
             if points % 25 == 0:
                 pygame.mixer.Sound(os.path.join('sounds', '8-bit-video-game-win-level-sound-version-1-145827.mp3')).play()
-            # if radius >= 250:
             if points % 100 == 0:
-                print("you win!!!!!!!!!")
+                print("You win!!!!!!!!!!")
                 pygame.mixer.Sound(os.path.join('sounds', 'celebration.mp3')).play()
         
         screen.blit(ball.image, ball.rect)
